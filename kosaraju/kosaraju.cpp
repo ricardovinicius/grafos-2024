@@ -1,121 +1,225 @@
+#include <vector>
 #include <iostream>
-#include <list>
-#include <map>
-#include <stack>
+#include <string.h>
+#include <bits/stdc++.h>
 using namespace std;
 
-class Graph {
+class Graph
+{
     int V;
-
-    map<int, list<int> >
-        adjList; // Adjacency list to store the graph
+    vector<vector<int>> adj;
 
 public:
-    Graph(int V) {
-        this->V = V;
-    }
-
-    // Function to add an edge between vertices u and v of
-    // the graph
-    void add_edge(int u, int v)
+    Graph(int V)
     {
-        adjList[u].push_back(v);
+        this->V = V;
+        adj.resize(V);
     }
 
-    // Function to print the adjacency list representation
-    // of the graph
+    void addEdge(int u, int v)
+    {
+        adj[u].push_back(v);
+    }
+
     void print()
     {
-        cout << "Adjacency list for the Graph: " << endl;
-        // Iterate over each vertex
-        for (auto i : adjList) {
-            // Print the vertex
-            cout << i.first << " -> ";
-            // Iterate over the connected vertices
-            for (auto j : i.second) {
-                // Print the connected vertex
-                cout << j << " ";
+        for (int i = 1; i < V; i++)
+        {
+            std::cout << "Vértice " << i << ":";
+            for (int adj : adj[i])
+            {
+                std::cout << " -> " << adj;
             }
+            std::cout << std::endl;
+        }
+    }
+
+    Graph reverse()
+    {
+        Graph newGraph(this->V);
+
+        for (int i = 1; i < V; i++)
+        {
+            for (int adj : adj[i])
+            {
+                newGraph.addEdge(adj, i);
+            }
+        }
+
+        return newGraph;
+    }
+
+    void dfsRpost(vector<vector<int>> adjList, int v, bool visited[], vector<int> &post)
+    {
+        visited[v] = true;
+
+        for (int a : adjList[v])
+        {
+            if (visited[a] != true)
+            {
+                dfsRpost(adjList, a, visited, post);
+            }
+        }
+
+        post.insert(post.begin(), v);
+    }
+
+    void dfsRsccs(vector<vector<int>> adjList, int v, bool visited[], vector<int> &scc)
+    {
+        visited[v] = true;
+        scc.push_back(v);
+
+        for (int a : adjList[v])
+        {
+            if (visited[a] != true)
+            {
+                dfsRsccs(adjList, a, visited, scc);
+            }
+        }
+    }
+
+    vector<vector<int>> findSCCs()
+    {
+        Graph reverseGraph = this->reverse();
+
+        bool visited[this->V];
+        for (bool v : visited)
+            v = false;
+
+        vector<int> post;
+
+        for (int v = 1; v < this->V; v++)
+        {
+            if (!visited[v])
+            {
+                dfsRpost(reverseGraph.adj, v, visited, post);
+            }
+        }
+
+        for (int i = 1; i < V; i++)
+        {
+            visited[i] = false;
+        }
+
+        vector<vector<int>> sccs;
+
+        for (int p : post)
+        {
+            if (!visited[p])
+            {
+                vector<int> scc;
+                dfsRsccs(adj, p, visited, scc);
+                sccs.push_back(scc);
+            }
+        }
+
+        return sccs;
+    }
+};
+
+int main(int argc, char *argv[])
+{
+    string path_input;
+    string path_output;
+
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-h") == 0)
+        {
+            cout << "ajuda" << endl;
+            return 1;
+        }
+
+        if (strcmp(argv[i], "-f") == 0)
+        {
+            path_input = argv[++i];
+        }
+
+        if (strcmp(argv[i], "-o") == 0)
+        {
+            path_output = argv[++i];
+        }
+    }
+
+    ifstream file_input;
+
+    if (!path_input.empty())
+    {
+        file_input = ifstream(path_input);
+
+        if (!file_input)
+        {
+            cerr << "erro ao abrir o arquivo de entrada" << endl;
+            return 1;
+        }
+    }
+
+    int vertices, edges;
+
+    if (file_input)
+    {
+        file_input >> vertices >> edges;
+    }
+    else
+    {
+        cin >> vertices >> edges;
+    }
+
+    Graph graph(vertices + 1);
+
+    for (int i = 0; i < edges; i++)
+    {
+        int vertice_1, vertice_2;
+
+        if (file_input)
+        {
+            file_input >> vertice_1 >> vertice_2;
+        }
+        else
+        {
+            cin >> vertice_1 >> vertice_2;
+        }
+
+        graph.addEdge(vertice_1, vertice_2);
+    }
+
+    vector<vector<int>> sccs = graph.findSCCs();
+
+    ofstream file_output;
+
+    if (!path_output.empty())
+    {
+        file_output = ofstream(path_output);
+
+        if (!file_output)
+        {
+            cerr << "erro ao abrir o arquivo de saida" << endl;
+            return 1;
+        }
+    }
+
+    for (vector<int> scc : sccs)
+    {
+        for (int i : scc)
+        {
+            if (!path_output.empty())
+            {
+                file_output << i << " ";
+            }
+            else
+            {
+                cout << i << " ";
+            }
+        }
+        if (!path_output.empty())
+        {
+            file_output << endl;
+        }
+        else
+        {
             cout << endl;
         }
     }
 
-    void DFSUtil(map<int, list<int>>adjList, int v, bool visited[], stack<int> *Stack)
-    {
-        visited[v] = true;
-        
-        if (Stack == nullptr) {
-            cout << v << " ";
-        }
-            
-        for (int i : adjList[v])
-            if (visited[i] == false)
-                DFSUtil(adjList, i, visited, Stack);
-
-        if (Stack != nullptr) {
-            Stack->push(v);
-        }
-    }
-
-    Graph getTranspose() {
-        Graph g(V);
-
-        for (int v = 1; v < V + 1; v++) {
-            for (int i : adjList[v]) {
-                g.add_edge(i, v);
-            }
-        }
-
-        return g;
-    }
-
-    void findSCCs() {
-        stack<int> Stack;
-
-        bool visited[V + 1];
-        for (int i = 1; i < V + 1; i++)
-            visited[i] = false;
-
-        for (int i = 1; i < V + 1; i++) {
-            if (!visited[i]) {
-                DFSUtil(adjList, i, visited, &Stack);
-                cout << endl;
-            }
-        }    
-
-        Graph g_t = getTranspose();
-
-        for (int i = 1; i < V + 1; i++)
-            visited[i] = false;
-
-        while (!Stack.empty()) {
-            int v = Stack.top();
-            Stack.pop();
-
-            if (!visited[v]) {
-                g_t.DFSUtil(g_t.adjList, v, visited, nullptr);
-                cout << endl;
-            }
-        }
-    }
-};
-
-int main()
-{
-    int vertices, edges;
-    cin >> vertices >> edges;
-
-    Graph g(vertices);
-
-    cout << vertices << " " << edges << endl;
-
-    for (int i = 0; i < edges; i++) {
-        int vertice_1, vertice_2;
-        cin >> vertice_1 >> vertice_2;
-
-        g.add_edge(vertice_1, vertice_2);
-    }
-
-    g.findSCCs();
     return 0;
 }
