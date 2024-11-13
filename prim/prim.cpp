@@ -2,6 +2,12 @@
 #define INF 2147483647
 using namespace std;
 
+struct Compare {
+    bool operator()(pair<int, int> a, pair<int, int> b) {
+        return a.second > b.second; // ordena a fila de prioridade com base no peso das arestas
+    }
+};
+
 class UWGraph // undirected weight graph
 {
     int V;
@@ -46,7 +52,7 @@ public:
 
         custo[v_0] = 0;
 
-        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+        priority_queue<pair<int, int>, vector<pair<int, int>>, Compare> pq;
         vector<bool> visited(this->V, false);
 
         for (int i = 0; i < custo.size(); i++)
@@ -70,7 +76,6 @@ public:
             }
 
             wt_sum += wt;
-            cout << wt << endl;
             visited[u] = true;
 
             for (auto w : adj[u])
@@ -88,39 +93,120 @@ public:
     }
 };
 
-int main()
+int main(int argc, char *argv[])
 {
-    int V = 8; // Temos 8 vértices (0 a 7)
+    string path_input;
+    string path_output;
+    bool solution_flag = false;
+    int v_0 = 0;
 
-    UWGraph g(V);
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-h") == 0)
+        {
+            cout << "ajuda" << endl;
+            return 1;
+        }
 
-    // Adicionando as arestas e seus pesos
-    g.addEdge(5, 4, 35); // Aresta 5-4 com peso 35
-    g.addEdge(7, 4, 37); // Aresta 7-4 com peso 37
-    g.addEdge(7, 5, 28); // Aresta 7-5 com peso 28
-    g.addEdge(0, 7, 16); // Aresta 0-7 com peso 16
-    g.addEdge(1, 5, 32); // Aresta 1-5 com peso 32
-    g.addEdge(0, 4, 38); // Aresta 0-4 com peso 38
-    g.addEdge(2, 3, 17); // Aresta 2-3 com peso 17
-    g.addEdge(7, 1, 19); // Aresta 7-1 com peso 19
-    g.addEdge(0, 2, 26); // Aresta 0-2 com peso 26
-    g.addEdge(1, 2, 36); // Aresta 1-2 com peso 36
-    g.addEdge(1, 3, 29); // Aresta 1-3 com peso 29
-    g.addEdge(7, 2, 34); // Aresta 7-2 com peso 34
-    g.addEdge(2, 6, 40); // Aresta 2-6 com peso 40
-    g.addEdge(3, 6, 52); // Aresta 3-6 com peso 52
-    g.addEdge(0, 6, 58); // Aresta 0-6 com peso 58
-    g.addEdge(6, 4, 93); // Aresta 6-4 com peso 93
+        if (strcmp(argv[i], "-f") == 0)
+        {
+            path_input = argv[++i];
+        }
 
-    auto res = g.prim(0);
+        if (strcmp(argv[i], "-o") == 0)
+        {
+            path_output = argv[++i];
+        }
+
+        if (strcmp(argv[i], "-s") == 0)
+        {
+            solution_flag = true;
+        }
+
+        if (strcmp(argv[i], "-i") == 0)
+        {
+            v_0 = stoi(argv[++i]) - 1;
+        }
+    }
+
+    ifstream file_input;
+
+    if (!path_input.empty())
+    {
+        file_input = ifstream(path_input);
+
+        if (!file_input)
+        {
+            cerr << "erro ao abrir o arquivo de entrada" << endl;
+            return 1;
+        }
+    }
+
+    int vertices, edges;
+
+    if (!path_input.empty())
+    {
+        file_input >> vertices >> edges;
+    }
+    else
+    {
+        cin >> vertices >> edges;
+    }
+
+    UWGraph g(vertices);
+
+    for (int i = 0; i < edges; i++)
+    {
+        int vertice_1, vertice_2, peso;
+
+        if (!path_input.empty())
+        {
+            file_input >> vertice_1 >> vertice_2 >> peso;
+        }
+        else
+        {
+            cin >> vertice_1 >> vertice_2 >> peso;
+        }
+
+        g.addEdge(vertice_1 - 1, vertice_2 - 1, peso);
+    }
+
+    auto res = g.prim(v_0);
     auto tree = res.first;
     int wt_sum = res.second;
 
-    for (int i = 1; i < tree.size(); i++)
+    ofstream file_output;
+
+    if (!path_output.empty())
     {
-        cout << i << "->" << tree[i] << " ";
+        file_output = ofstream(path_output);
+
+        if (!file_output)
+        {
+            cerr << "erro ao abrir o arquivo de saida" << endl;
+            return 1;
+        }
     }
 
-    cout << endl
-         << "soma dos pesos: " << wt_sum << endl;
+    if (solution_flag) {
+        if (!path_output.empty()) {
+            for (int i = 1; i < tree.size(); i++)
+            {
+                file_output << "(" << i + 1 << "," << tree[i] + 1 << ")" << " ";
+            }
+        } else {
+            for (int i = 1; i < tree.size(); i++)
+            {
+                cout << "(" << i + 1 << "," << tree[i] + 1 << ")" << " ";
+            }
+        }
+
+        cout << endl;
+    } else {
+        if (!path_output.empty()) {
+            file_output << wt_sum << endl;
+        } else {
+            cout << wt_sum << endl;
+        }
+    }
 }
