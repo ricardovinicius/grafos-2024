@@ -113,7 +113,10 @@ int main(int argc, char *argv[])
     {
         if (strcmp(argv[i], "-h") == 0)
         {
-            cout << "ajuda" << endl;
+            cout << "-h: mostra o help \n" << 
+            "-f <arquivo>: indica o \"arquivo\" que contém o grafo de entrada \n" << 
+            "-o <arquivo>: redireciona a saida para o \"arquivo\" \n" <<
+            "-s: mostra a solucao \n" << endl;
             return 1;
         }
 
@@ -130,11 +133,6 @@ int main(int argc, char *argv[])
         if (strcmp(argv[i], "-s") == 0)
         {
             solution_flag = true;
-        }
-
-        if (strcmp(argv[i], "-i") == 0)
-        {
-            v_0 = stoi(argv[++i]) - 1;
         }
     }
 

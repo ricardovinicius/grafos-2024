@@ -126,7 +126,9 @@ int main(int argc, char *argv[])
     {
         if (strcmp(argv[i], "-h") == 0)
         {
-            cout << "ajuda" << endl;
+            cout << "-h: mostra o help \n" << 
+            "-f <arquivo>: indica o \"arquivo\" que contém o grafo de entrada \n" << 
+            "-o <arquivo>: redireciona a saida para o \"arquivo\" \n" << endl;
             return 1;
         }
 

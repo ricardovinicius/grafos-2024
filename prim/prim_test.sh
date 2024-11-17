@@ -1,6 +1,6 @@
 #!/bin/bash
 
-prim=./prim.bin
+prim=./prim
 
 echo "Testando algoritmo de Prim"
 for i in instances/*.mtx

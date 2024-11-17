@@ -1,6 +1,6 @@
 #!/bin/bash
 
-kruskal=./kruskal.bin
+kruskal=./kruskal
 
 echo "Testando algoritmo de Kruskal"
 for i in instances/*.mtx
